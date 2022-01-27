@@ -1,3 +1,19 @@
+# PyTorch Geometric
+
+(Assuming the GPU is compatible with CUDA 11.3, if not use CUDA 10.2.)
+
+```
+conda create --name pygeom python=3.6 -y
+conda activate pygeom
+conda install ipython -y
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+conda install pyg -c pyg -c conda-forge
+```
+
+
+
+# README
+
 [pypi-image]: https://badge.fury.io/py/torch-geometric.svg
 [pypi-url]: https://pypi.python.org/pypi/torch-geometric
 [testing-image]: https://github.com/pyg-team/pytorch_geometric/actions/workflows/testing.yml/badge.svg
