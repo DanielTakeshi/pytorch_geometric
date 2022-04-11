@@ -64,10 +64,6 @@ class Net(torch.nn.Module):
         self.mlp = MLP([128, 128, 128, num_classes], dropout=0.5,
                        batch_norm=False)
 
-        self.lin1 = torch.nn.Linear(128, 128)
-        self.lin2 = torch.nn.Linear(128, 128)
-        self.lin3 = torch.nn.Linear(128, num_classes)
-
     def forward(self, data):
         sa0_out = (data.x, data.pos, data.batch)
         sa1_out = self.sa1_module(*sa0_out)
