@@ -23,10 +23,14 @@ train_dataset = ShapeNet(path, category, split='trainval', transform=transform,
                          pre_transform=pre_transform)
 test_dataset = ShapeNet(path, category, split='test',
                         pre_transform=pre_transform)
-train_loader = DataLoader(train_dataset, batch_size=12, shuffle=True,
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True,
                           num_workers=6)
-test_loader = DataLoader(test_dataset, batch_size=12, shuffle=False,
+test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,
                          num_workers=6)
+
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 class FPModule(torch.nn.Module):
@@ -79,6 +83,8 @@ class Net(torch.nn.Module):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net(train_dataset.num_classes).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+print(f'The segmentation model:\n{model}')
+print(f'Parameters: {count_parameters(model)}.\n')
 
 
 def train():

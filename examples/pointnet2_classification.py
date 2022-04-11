@@ -9,6 +9,10 @@ from torch_geometric.loader import DataLoader
 from torch_geometric.nn import MLP, PointConv, fps, global_max_pool, radius
 
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
 class SAModule(torch.nn.Module):
     def __init__(self, ratio, r, nn):
         super().__init__()
@@ -44,9 +48,9 @@ class Net(torch.nn.Module):
     def __init__(self):
         super().__init__()
 
-        # Input channels account for both `pos` and node features.
-        # NOTE(daniel) it is in fact important that the MLP has '3' here because
-        # that's the dimension of the data (data.pos is 3D, data.x is None).
+        # Input channels account for both `pos` and node features. NOTE(daniel):
+        # it is important that the MLP for `sa1_module` has '3' here because
+        # that's the dimension of the PC data (data.pos is 3D, data.x is None).
         self.sa1_module = SAModule(0.5, 0.2, MLP([3, 64, 64, 128]))
         self.sa2_module = SAModule(0.25, 0.4, MLP([128 + 3, 128, 128, 256]))
         self.sa3_module = GlobalSAModule(MLP([256 + 3, 256, 512, 1024]))
@@ -101,7 +105,10 @@ if __name__ == '__main__':
     model = Net().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    for epoch in range(1, 201):
+    print(f'The classification model:\n{model}')
+    print(f'Parameters: {count_parameters(model)}.\n')
+
+    for epoch in range(1, 101):
         train(epoch)
         test_acc = test(test_loader)
         print(f'Epoch: {epoch:03d}, Test: {test_acc:.4f}')
