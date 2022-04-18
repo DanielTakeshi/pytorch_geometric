@@ -41,7 +41,9 @@ class FPModule(torch.nn.Module):
         self.nn = nn
 
     def forward(self, x, pos, batch, x_skip, pos_skip, batch_skip):
+        #print(f'  forward pass, input shapes, x: {x.shape}, x_skip: {x_skip.shape})')
         x = knn_interpolate(x, pos, pos_skip, batch, batch_skip, k=self.k)
+        #print(f'  after knn_interpolate, x: {x.shape}')
         if x_skip is not None:
             x = torch.cat([x, x_skip], dim=1)
         x = self.nn(x)
@@ -66,13 +68,21 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
         sa0_out = (data.x, data.pos, data.batch)
+        #print(f'sa0_out: {sa0_out[0].shape} {sa0_out[1].shape} {sa0_out[2].shape}')
         sa1_out = self.sa1_module(*sa0_out)
+        #print(f'sa1_out: {sa1_out[0].shape} {sa1_out[1].shape} {sa1_out[2].shape}')
         sa2_out = self.sa2_module(*sa1_out)
+        #print(f'sa2_out: {sa2_out[0].shape} {sa2_out[1].shape} {sa2_out[2].shape}')
         sa3_out = self.sa3_module(*sa2_out)
+        #print(f'sa3_out: {sa3_out[0].shape} {sa3_out[1].shape} {sa3_out[2].shape}')
 
         fp3_out = self.fp3_module(*sa3_out, *sa2_out)
+        #print(f'fp3_out: {fp3_out[0].shape} {fp3_out[1].shape} {fp3_out[2].shape}')
         fp2_out = self.fp2_module(*fp3_out, *sa1_out)
+        #print(f'fp2_out: {fp2_out[0].shape} {fp2_out[1].shape} {fp2_out[2].shape}')
         x, _, _ = self.fp1_module(*fp2_out, *sa0_out)
+        #print(f'x: {x.shape}')
+        #import pdb; pdb.set_trace()
 
         return self.mlp(x).log_softmax(dim=-1)
 

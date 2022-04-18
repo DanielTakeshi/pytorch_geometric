@@ -24,6 +24,8 @@ class SAModule(torch.nn.Module):
         idx = fps(pos, batch, ratio=self.ratio)
         row, col = radius(pos, pos[idx], self.r, batch, batch[idx],
                           max_num_neighbors=64)
+        #print(pos.shape, pos[idx].shape, row.shape, col.shape, pos[idx].shape[0]*64)
+        #import pdb; pdb.set_trace()
         edge_index = torch.stack([col, row], dim=0)
         x_dst = None if x is None else x[idx]
         x = self.conv((x, x_dst), (pos, pos[idx]), edge_index)
@@ -51,6 +53,9 @@ class Net(torch.nn.Module):
         # Input channels account for both `pos` and node features. NOTE(daniel):
         # it is important that the MLP for `sa1_module` has '3' here because
         # that's the dimension of the PC data (data.pos is 3D, data.x is None).
+        # NOTE(daniel): can crank up the radius values (0.2 and 0.4 by default) to
+        # some crazily high # and it doesn't matter (code only takes 64 points,
+        # though not clear if the 64 _nearest_ such points...).
         self.sa1_module = SAModule(0.5, 0.2, MLP([3, 64, 64, 128]))
         self.sa2_module = SAModule(0.25, 0.4, MLP([128 + 3, 128, 128, 256]))
         self.sa3_module = GlobalSAModule(MLP([256 + 3, 256, 512, 1024]))
@@ -59,11 +64,15 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
         sa0_out = (data.x, data.pos, data.batch)
+        #print(f'sa0_out: (sa0_out[0]=None) {sa0_out[1].shape} {sa0_out[2].shape}')
         sa1_out = self.sa1_module(*sa0_out)
+        #print(f'sa1_out: {sa1_out[0].shape} {sa1_out[1].shape} {sa1_out[2].shape}')
         sa2_out = self.sa2_module(*sa1_out)
+        #print(f'sa2_out: {sa2_out[0].shape} {sa2_out[1].shape} {sa2_out[2].shape}')
         sa3_out = self.sa3_module(*sa2_out)
+        #print(f'sa3_out: {sa3_out[0].shape} {sa3_out[1].shape} {sa3_out[2].shape}')
         x, pos, batch = sa3_out
-
+        #import pdb; pdb.set_trace()
         return self.mlp(x).log_softmax(dim=-1)
 
 
