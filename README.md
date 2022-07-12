@@ -1,23 +1,33 @@
 # PyTorch Geometric
 
-Installation steps, tested on Ubuntu 18.04. Here's a working procedure for me with **Python 3.6** (despite how it is seemingly not supported):
+## Daniel's Comments
+
+<details>
+<summary>
+Installation steps, tested on Ubuntu 18.04. Here's a working procedure for me with <b>Python 3.6 to 3.9</b>.
+</summary>
 
 ```
-conda create --name pygeom python=3.7 -y
+conda create --name pygeom python=3.9 -y
 conda activate pygeom
 conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit=10.1 -c pytorch -y
 conda install pyg -c pyg -c conda-forge
 conda install ipython -y
 ```
+</details>
 
 A few general comments:
 
-- Installing `pytorch_geometric` with conda has been very buggy in my
-  experience, which is why I use pip. Also, do not use `torch-spline-conv`
-  since I have gotten "GLIBC" errors.
 - If using 3090 GPUs, then those will require CUDA 11.x.
-- We do need `torch` installed before installing PyTorch Geometric.
+- Installing `pytorch_geometric` with conda has generally been buggy. If this doesn't work, search online for fixes.
+- The `torch-spline-conv` package might be problematic since I have gotten "GLIBC" errors.
+  It is an optional dependency of `pytorch_geometric`.
+- Despite how the README suggests it requires Python 3.7 or later, I can
+  run this with Python 3.6. I can do the above for Python 3.6 to 3.9 and get `import torch` and
+  basic stuff like that running. This does _not_ work for Python 3.10 due to incompatibilities
+  with `torch`.
 
+<hr>
 
 # README
 
