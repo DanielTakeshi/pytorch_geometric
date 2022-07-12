@@ -10,7 +10,7 @@ Installation steps, tested on Ubuntu 18.04. Here's a working procedure for me wi
 ```
 conda create --name pygeom python=3.9 -y
 conda activate pygeom
-conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit=10.1 -c pytorch -y
+conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit=10.2 -c pytorch -y
 conda install pyg -c pyg -c conda-forge
 conda install ipython -y
 ```
@@ -26,6 +26,7 @@ A few general comments:
   run this with Python 3.6. I can do the above for Python 3.6 to 3.9 and get `import torch` and
   basic stuff like that running. This does _not_ work for Python 3.10 due to incompatibilities
   with `torch`.
+- But, [check that `torch` can see the GPU](https://stackoverflow.com/questions/48152674/how-to-check-if-pytorch-is-using-the-gpu).
 
 <hr>
 
