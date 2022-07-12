@@ -16,12 +16,14 @@ install_requires = [
 graphgym_requires = [
     'yacs',
     'hydra-core',
+    'protobuf<4.21',
     'pytorch-lightning',
 ]
 
-full_install_requires = graphgym_requires + [
+full_requires = graphgym_requires + [
     'h5py',
     'numba',
+    'sympy',
     'pandas',
     'captum',
     'rdflib',
@@ -32,6 +34,11 @@ full_install_requires = graphgym_requires + [
     'scikit-image',
     'pytorch-memlab',
     'torchmetrics>=0.7',
+]
+
+benchmark_requires = [
+    'protobuf<4.21',
+    'wandb',
 ]
 
 test_requires = [
@@ -62,7 +69,8 @@ setup(
     install_requires=install_requires,
     extras_require={
         'graphgym': graphgym_requires,
-        'full': full_install_requires,
+        'full': full_requires,
+        'benchmark': benchmark_requires,
         'test': test_requires,
         'dev': dev_requires,
     },

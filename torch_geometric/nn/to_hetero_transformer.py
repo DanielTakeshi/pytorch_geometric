@@ -6,9 +6,12 @@ from typing import Any, Dict, Optional, Tuple, Union
 import torch
 from torch.nn import Module
 
-from torch_geometric.nn.fx import Transformer
+from torch_geometric.nn.fx import Transformer, get_submodule
 from torch_geometric.typing import EdgeType, Metadata, NodeType
-from torch_geometric.utils.hetero import get_unused_node_types
+from torch_geometric.utils.hetero import (
+    check_add_self_loops,
+    get_unused_node_types,
+)
 
 try:
     from torch.fx import Graph, GraphModule, Node
@@ -104,7 +107,7 @@ def to_hetero(module: Module, metadata: Metadata, aggr: str = "sum",
             In case :obj:`input_map` is not further specified, will try to
             automatically determine the correct type of input arguments.
             (default: :obj:`None`)
-        debug: (bool, optional): If set to :obj:`True`, will perform
+        debug (bool, optional): If set to :obj:`True`, will perform
             transformation in debug mode. (default: :obj:`False`)
     """
     transformer = ToHeteroTransformer(module, metadata, aggr, input_map, debug)
@@ -167,6 +170,9 @@ class ToHeteroTransformer(Transformer):
     def call_message_passing_module(self, node: Node, target: Any, name: str):
         # Add calls to edge type-wise `MessagePassing` modules and aggregate
         # the outputs to node type-wise embeddings afterwards.
+
+        module = get_submodule(self.module, target)
+        check_add_self_loops(module, self.metadata[1])
 
         # Group edge-wise keys per destination:
         key_name, keys_per_dst = {}, defaultdict(list)

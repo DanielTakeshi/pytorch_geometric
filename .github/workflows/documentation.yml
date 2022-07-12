@@ -18,9 +18,9 @@ jobs:
         torch-version: [1.11.0]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -32,8 +32,7 @@ jobs:
         run: |
           pip install torch-scatter -f https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html
           pip install torch-sparse -f https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html
-          pip install sphinx
-          pip install sphinx_rtd_theme
+          pip install git+https://github.com/pyg-team/pyg_sphinx_theme.git
 
       - name: Install main package
         run: |
