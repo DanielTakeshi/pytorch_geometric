@@ -1,9 +1,9 @@
 # PyTorch Geometric
 
-(Assuming the GPU is compatible with CUDA 11.3, if not use CUDA 10.2.)
+(Assuming the GPU is compatible with CUDA 11.3, if not, use `cudatoolkit=10.2`.)
 
 ```
-conda create --name pygeom python=3.6 -y
+conda create --name pygeom python=3.7 -y
 conda activate pygeom
 conda install ipython -y
 conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
