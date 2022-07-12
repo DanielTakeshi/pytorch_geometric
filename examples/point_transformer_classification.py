@@ -1,4 +1,8 @@
+import time
+import pickle
 import os.path as osp
+from collections import defaultdict
+import numpy as np
 
 import torch
 import torch.nn.functional as F
@@ -13,12 +17,8 @@ from torch_geometric.nn import MLP, global_mean_pool
 from torch_geometric.nn.conv import PointTransformerConv
 from torch_geometric.nn.pool import knn
 
-path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data/ModelNet10')
-pre_transform, transform = T.NormalizeScale(), T.SamplePoints(1024)
-train_dataset = ModelNet(path, '10', True, transform, pre_transform)
-test_dataset = ModelNet(path, '10', False, transform, pre_transform)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 class TransformerBlock(torch.nn.Module):
@@ -136,7 +136,6 @@ class Net(torch.nn.Module):
 
 def train():
     model.train()
-
     total_loss = 0
     for data in train_loader:
         data = data.to(device)
@@ -152,7 +151,6 @@ def train():
 @torch.no_grad()
 def test(loader):
     model.eval()
-
     correct = 0
     for data in loader:
         data = data.to(device)
@@ -162,6 +160,14 @@ def test(loader):
 
 
 if __name__ == '__main__':
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data/ModelNet10')
+    pre_transform, transform = T.NormalizeScale(), T.SamplePoints(1024)
+    train_dataset = ModelNet(path, '10', True, transform, pre_transform)
+    test_dataset = ModelNet(path, '10', False, transform, pre_transform)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True,
+                              num_workers=6)
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False,
+                             num_workers=6)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = Net(0, train_dataset.num_classes,
@@ -170,8 +176,26 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20,
                                                 gamma=0.5)
 
+    print(f'The classification model:\n{model}')
+    print(f'Parameters: {count_parameters(model)}.\n')
+    stats = defaultdict(list)
+    start = time.time()
+
     for epoch in range(1, 201):
         loss = train()
+        t_test = time.time()
         test_acc = test(test_loader)
         print(f'Epoch {epoch:03d}, Loss: {loss:.4f}, Test: {test_acc:.4f}')
+        stats['train_loss'].append(loss)
+        stats['test_acc'].append(test_acc)
+        stats['elapsed_t'].append(time.time() - start)
+        stats['individual_t_test'].append(time.time() - t_test)
         scheduler.step()
+
+    elapsed = time.time() - start
+    elapsed_test = np.sum(stats['individual_t_test'])
+    print(f'Elapsed time (total): {elapsed:0.1f}s')
+    print(f'Elapsed time (test): {elapsed_test:0.1f}s')
+
+    with open('point_transformer_classification_stats.pkl', 'wb') as fh:
+        pickle.dump(stats, fh)

@@ -27,5 +27,8 @@ coverage.xml
 !test/data/
 
 
+# Daniel
 *.swo
 *.swp
+*.png
+*.pkl
