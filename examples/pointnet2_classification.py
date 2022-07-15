@@ -50,7 +50,8 @@ class GlobalSAModule(torch.nn.Module):
 
 
 class Net(torch.nn.Module):
-    def __init__(self):
+
+    def __init__(self, out_channels):
         super().__init__()
 
         # Input channels account for both `pos` and node features. NOTE(daniel):
@@ -63,7 +64,7 @@ class Net(torch.nn.Module):
         self.sa2_module = SAModule(0.25, 0.4, MLP([128 + 3, 128, 128, 256]))
         self.sa3_module = GlobalSAModule(MLP([256 + 3, 256, 512, 1024]))
 
-        self.mlp = MLP([1024, 512, 256, 10], dropout=0.5, norm=None)
+        self.mlp = MLP([1024, 512, 256, out_channels], dropout=0.5, batch_norm=False)
 
     def forward(self, x, pos, batch):
         """Daniel: changing this to explicitly have (x, pos, batch)."""

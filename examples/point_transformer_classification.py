@@ -27,10 +27,8 @@ class TransformerBlock(torch.nn.Module):
         self.lin_in = Lin(in_channels, in_channels)
         self.lin_out = Lin(out_channels, out_channels)
 
-        self.pos_nn = MLP([3, 64, out_channels], norm=None, plain_last=False)
-
-        self.attn_nn = MLP([out_channels, 64, out_channels], norm=None,
-                           plain_last=False)
+        self.pos_nn = MLP([3, 64, out_channels], batch_norm=False)
+        self.attn_nn = MLP([out_channels, 64, out_channels], batch_norm=False)
 
         self.transformer = PointTransformerConv(in_channels, out_channels,
                                                 pos_nn=self.pos_nn,
@@ -52,7 +50,7 @@ class TransitionDown(torch.nn.Module):
         super().__init__()
         self.k = k
         self.ratio = ratio
-        self.mlp = MLP([in_channels, out_channels], plain_last=False)
+        self.mlp = MLP([in_channels, out_channels])
 
     def forward(self, x, pos, batch):
         # FPS sampling
@@ -86,7 +84,7 @@ class Net(torch.nn.Module):
         in_channels = max(in_channels, 1)
 
         # first block
-        self.mlp_input = MLP([in_channels, dim_model[0]], plain_last=False)
+        self.mlp_input = MLP([in_channels, dim_model[0]])
 
         self.transformer_input = TransformerBlock(in_channels=dim_model[0],
                                                   out_channels=dim_model[0])
@@ -105,7 +103,7 @@ class Net(torch.nn.Module):
                                  out_channels=dim_model[i + 1]))
 
         # class score computation
-        self.mlp_output = MLP([dim_model[-1], 64, out_channels], norm=None)
+        self.mlp_output = MLP([dim_model[-1], 64, out_channels], batch_norm=False)
 
     def forward(self, x, pos, batch=None):
 
